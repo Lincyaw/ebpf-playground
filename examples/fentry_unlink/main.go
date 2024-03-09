@@ -10,9 +10,6 @@ import (
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target amd64 bpf unlink.c -- -I../headers
 
 func main() {
-	// Name of the kernel function to trace.
-	fn := "do_unlinkat"
-
 	// Allow the current process to lock memory for eBPF resources.
 	if err := rlimit.RemoveMemlock(); err != nil {
 		log.Fatal(err)
@@ -29,11 +26,18 @@ func main() {
 	// pre-compiled program. Each time the kernel function enters, the program
 	// will increment the execution counter by 1. The read loop below polls this
 	// map value once per second.
-	kp, err := link.Kprobe(fn, objs.DoUnlinkat, nil)
+	kp, err := link.AttachTracing(link.TracingOptions{
+		Program: objs.DoUnlinkat,
+	})
 	if err != nil {
 		log.Fatalf("opening kprobe: %s", err)
 	}
 	defer kp.Close()
+
+	// kp, err = link.AttachTracing(link.TracingOptions{
+	// 	Program: objs.DoUnlinkatExit,
+	// })
+	// defer kp.Close()
 
 	log.Println("Waiting for events..")
 	for {

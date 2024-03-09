@@ -8,14 +8,14 @@
 char LICENSE[] SEC("license") = "Dual BSD/GPL";
 
 SEC("kprobe/do_unlinkat")
-int testfunc(struct pt_regs *ctx)
+int do_unlinkat(struct pt_regs *ctx)
 {
-    u64 pid;
-    const char * pathname;
-    pid = bpf_get_current_pid_tgid() >> 32;
+    pid_t pid;
     struct filename *fname = (struct filename *)PT_REGS_PARM2(ctx);
-    pathname = BPF_CORE_READ(fname, name);
-    bpf_printk("KPROBE ENTRY pid = %d, filename = %s\n", pid, pathname);
+    pid = bpf_get_current_pid_tgid() >> 32;
+    
+    const char * pathname = BPF_CORE_READ(fname, name);   
+    bpf_printk("fentry: pid = %d, filename = %s\n", pid, pathname);
     return 0;
 }
 
