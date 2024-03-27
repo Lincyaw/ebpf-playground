@@ -1,0 +1,7 @@
+#!/usr/bin/env bpftrace
+uretprobe:/bin/bash:readline {
+    printf("readline: \"%s\"\n", str(retval));
+}
+/*
+*  equal to:   sudo bpftrace -e 'uretprobe:/bin/bash:readline { printf("readline: \"%s\"\n", str(retval)); }'
+*/
